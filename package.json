@@ -1,0 +1,12 @@
+{
+  "name": "portfolio-sb",
+  "version": "1.0.0",
+  "description": "## Vue d'Ensemble Développeur front-end chez ArchiWebos, vous créez le site portfolio d'une architecte d'intérieur. Votre mission est d'enrichir le site avec un contenu dynamique en utilisant JavaScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
