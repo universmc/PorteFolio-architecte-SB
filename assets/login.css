@@ -26,6 +26,10 @@ input {
     flex-direction: column;
     gap:10px;
 }
+.error-message {
+    text-align: center;
+    color: red;
+}
 form h2 {
     text-align: center;
 }

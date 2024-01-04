@@ -1,5 +1,6 @@
 // login page
 document.addEventListener('DOMContentLoaded', (event) => {
+    const errorMessage = document.querySelector('.error-message');
     const loginForm = document.querySelector('.login-form');
 
 loginForm.addEventListener('submit', function(event) {
@@ -18,7 +19,10 @@ loginForm.addEventListener('submit', function(event) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('User not found or credentials are incorrect');
+            // Si le statut de la réponse n'est pas dans la plage 200-299
+            return response.json().then(errorData => {
+                throw new Error(errorData.message || 'Une erreur est survenue');
+            });
         }
         return response.json();
     })
@@ -27,7 +31,8 @@ loginForm.addEventListener('submit', function(event) {
         window.location.href = 'index.html';
     })
     .catch(error => {
-        errorMessage.textContent = error.message;
+        console.error('Erreur:', error);
+        errorMessage.textContent = error.message; 
         errorMessage.style.display = 'block';
     });
 })});
