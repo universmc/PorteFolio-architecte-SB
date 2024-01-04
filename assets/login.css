@@ -1,0 +1,30 @@
+html, body {
+    min-height: 100vh;
+    min-width: 100vh;
+}
+header {
+    min-height: 10vh;
+    padding: 50px;
+    margin: 0;
+}
+
+main {
+    display: flex;
+    min-height: 75vh;
+    justify-content: center;
+}
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}
+form h2 {
+    text-align: center;
+}
+footer {
+  min-height: 5vh;
+  text-align: end;
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+}
