@@ -145,7 +145,7 @@ main {
     padding-bottom: 25px;
 	text-align: center;
 }
-.btn-filtre {
+.btn-filtres {
     border: 1px solid #1D6154;
     background-color: white;
     color:#1D6154;
@@ -155,7 +155,7 @@ main {
     border-radius: 60px;
     padding: 5px;
 }
-.btn-filtre:hover{
+.btn-filtres:hover{
     background-color: #1D6154;
     color: white;
 }
