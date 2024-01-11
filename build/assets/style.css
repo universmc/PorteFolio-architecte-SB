@@ -1,0 +1,10 @@
+.edition {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    min-width: 100%;
+    min-height: 20px;
+    background-color: black;
+    color: white;
+
+}

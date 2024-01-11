@@ -105,6 +105,7 @@ main {
 #introduction {
 	display: flex;
 	align-items: center;
+	margin: 0;
 }
 #introduction figure {
 	flex: 1;

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     galleryContainer.appendChild(div);
                 });
                 // Afficher la modale
-                modaleObjets.style.display = 'block';
+                modaleObjets.style.display = 'flex';
             })
             .catch(error => console.error('Erreur:', error));
     }
