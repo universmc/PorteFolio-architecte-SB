@@ -27,8 +27,8 @@ loginForm.addEventListener('submit', function(event) {
         return response.json();
     })
     .then(data => {
-        localStorage.setItem('token', data.token);
-        window.location.href = 'index.html';
+        localStorage.setItem('token', data.token); //.. localStorage.getItem("token");
+        window.location.href = 'index_log.html';
     })
     .catch(error => {
         console.error('Erreur:', error);

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<title>Crud Modale Gallery</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Work+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/modale-crud.css">
+</head>
+<body>
+        <div class="modale-content" id="modale-all">
+            <!-- Contenu pour tous les projets -->
+            <div class="modal">
+                <div class="modal-body">
+                    <div class="modal-header">
+                        <button class="goPrev">[<]</button>
+                        <span class="modal-title">Ajouter une photo</span>
+                        <button class="modal-close-button">X</button>
+                    </div>
+                    <div class="image-preview">
+                        <img id="preview-image" src="assets/img-preview.png" alt="Aperçu de l'image" />
+                        <a type="file" class="btn-add-photo" id="image-upload" name="image">+ ajouter Photo</a>
+                        <span class="json-info-img">jpeg, png, 4mo max</span>
+                    </div>
+                    <form id="photo-form">
+                        <div class="form-group">
+                            <label for="title">Titre</label>
+                            <input type="text" id="title" name="title">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Catégorie</label>
+                            <select id="category" name="category">
+                                <!-- Categories options here -->
+                            </select>
+                        </div>
+                        <div class="ln-bar"></div>
+                        <button type="submit" class="ajouter-photo">Valider</button>
+                    </form>
+                </div>
+            </div>
+
+    </div>
+    <script src="assets/gallery.js"></script>
+</body>
+</html>
+
+
+

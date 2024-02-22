@@ -59,6 +59,17 @@ header {
 	padding: 50px;
 	background-color: #FFFEF8;
 }
+.edition {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+	align:center;
+    min-width: 100%;
+    min-height: 30px;
+    background-color: black;
+    color: white;
+
+}
 section {
 	margin: 50px 0;
 }
@@ -130,6 +141,7 @@ main {
 	text-align: center;
 	margin-bottom: 1em;
 }
+
 .gallery {
 	width: 100%;
 	display: grid;
