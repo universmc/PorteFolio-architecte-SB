@@ -1,469 +1,474 @@
-// Chargement du DOM
-
-document.addEventListener("DOMContentLoaded", (event) => {
-    console.log("DOM fully loaded and parsed");
-
-const modalOverlay = document.getElementById('modalOverlay');
-const openModalBtn = document.getElementById('open-modal-btn');
-const modal = document.getElementById('modalContent');
-
-
-// ouverture de la Modal 
-openModalBtn.addEventListener('click', () => {
-    modalOverlay.style.display = 'block'; // Affiche l'overlay
-    displayModal(1); // Initialise et affiche la modale à l'Étape 1
-  });
-// fermeture de la Modal
-  window.addEventListener('click', (event) => {
-    if (event.target == modalOverlay) {
-      modalOverlay.style.display = 'none'; // Cache l'overlay
-      modal.style.display = 'none'; // Cache le contenu de la modale
-    }
-  });
-
-
-
-
-// Création de la modal 
-function createStep1Modal() {
-    const header = document.createElement('div');
-    header.className = 'header-modal';
-    header.innerHTML = `<button class="close">X</button>`;
-
-    const main = document.createElement('div');
-    main.className = 'main-modal';
-    // Ajouter le contenu de la galerie ici
-    main.innerHTML = `
-    <h2>Galerie photo</h2>
-    <div class="modalGallery"></div>
-    `;
-
-    const footer = document.createElement('div');
-    footer.className = 'footer-modal';
-    footer.innerHTML = `
-    <div class="lnBar"></div>
-    <button id="btn-add-photo" class="btn-ajouter-photo">Ajouter une photo</button>
-    `;
-
-
-loadGallery();
-
-return { header, main, footer };
-}
-
-// Modal 1 FONCTION affichage galery + methode Delete
-// affichage de donnée 
-fetch('http://localhost:5678/api/works')
-    .then(response => response.json())
-    .then(works => {
-        const gallery = document.querySelector('.modalGallery');
-        gallery.innerHTML = ''; // Effacer le contenu existant
-
-        works.forEach(work => {
-            const imgElement = document.createElement('img');
-            imgElement.src = work.imageUrl;
-
-            // Créer un élément pour l'icône de suppression en utilisant FontAwesome
-            const deleteIcon = document.createElement('i');
-            deleteIcon.setAttribute('data-id', work.id); // Ajouter l'attribut data-id
-            deleteIcon.classList.add('fa-solid', 'fa-trash-can', 'delete-icon');
-            deleteIcon.addEventListener('click', () => supprimerTravail(work.id)); // Ajouter la fonction de suppression
-
-            const workElement = document.createElement('div');
-            workElement.appendChild(imgElement);
-            workElement.appendChild(deleteIcon);
-            gallery.appendChild(workElement);
-        });
-    })
-    .catch(error => console.error('Erreur:', error));
-
-
- 
-// FONCTION Modal 1 btn ajouter ajouter photo (logic modal Go modal 2)
-
-function loadGallery() {
-fetch('http://localhost:5678/api/works')
-    .then(response => response.json())
-    .then(works => {
-        const gallery = document.querySelector('.modalGallery');
-        gallery.innerHTML = ''; // Effacer le contenu existant
-
-        works.forEach(work => {
-            const imgElement = document.createElement('img');
-            imgElement.src = work.imageUrl;
-
-            // Créer un élément pour l'icône de suppression en utilisant FontAwesome
-            const deleteIcon = document.createElement('i');
-            deleteIcon.setAttribute('data-id', work.id); // Ajouter l'attribut data-id
-            deleteIcon.classList.add('fa-solid', 'fa-trash-can', 'delete-icon');
-            deleteIcon.addEventListener('click', () => supprimerTravail(work.id)); // Ajouter la fonction de suppression
-
-            const workElement = document.createElement('div');
-            workElement.appendChild(imgElement);
-            workElement.appendChild(deleteIcon);
-            gallery.appendChild(workElement);
-        });
-    })
-    .catch(error => console.error('Erreur:', error));
-}
-
-
-// creation de la modal 2 
-function createStep2Modal() {
-    const header = document.createElement('div');
-    header.className = 'header-modal';
-    header.innerHTML = '<button class="goPrev">[<]</button><button class="close">X</button>';
-
-    const form = document.createElement('form');
-    form.className = 'form-content';
-    form.setAttribute('enctype', 'multipart/form-data'); // Important pour l'envoi de fichiers
-    form.innerHTML = `
-        <h2>Ajout photo</h2>
-        <div class="photo-upload image-preview">
-            <img class="img-prev" src="img-preview.png" alt="Aperçu de l'image">
-            <label for="addImgButton" class="add-img">+ Ajoutez photo</label>
-            <input type="file" id="addImgButton" name="image" accept="image/png, image/jpeg" style="display: none;">
-            <span class="format-img">jpg, .png 4mo max</span>
-        </div>
-        <div class="form-group">
-            <label for="titreInput">Titre</label>
-            <input type="text" id="titreInput" name="title">
-        </div>
-        <div class="form-group">
-            <label for="categorie">Catégorie</label>
-            <select id="categorie" name="categoryId">
-                <option value="">Sélectionnez une catégorie</option>
-            </select>
-        </div>
-        <button type="submit" class="btn-submit">Envoyer</button>
-    `;
-
-    const main = document.createElement('div');
-    main.className = 'main-modal';
-    main.appendChild(form);
-
-    const footer = document.createElement('div');
-    footer.className = 'footer-modal';
-    footer.innerHTML = '<div class="lnBar"></div>';
-
-
-    return { header, main, footer };
-}
-
-
-// !!! ajouter la logique du formaire 
-
-// Fonction pour créer la modale d'étape 3 - Aperçu après ajout
-function createStep3Modal() {
-    const header = document.createElement('div');
-    header.className = `header-modal`;
-    header.innerHTML = `<button class="goPrev">[<]</button><button class="close">X</button>`;
-
-    const main = document.createElement('div');
-    main.className = `main-modal`;
-    // Ici, vous pouvez ajouter le formulaire d'ajout de photo !!!
-    main.innerHTML = `
-    <h2>Ajout photo</h2>
-        <div class="form-content">
-        <form>
-        <div class="photo-upload image-preview">
-            <img class="img-prev" src="img-preview.png" alt="prev">
-            <button class="add-img">+ Ajouter photo</button>
-            <span class="format-img">jpg, .png 4mo max></span>
-            <div class="form-group"><label for="titre">Titre</label>
-                <input type="text" id="titre" name="titre"></div><div class="form-group">
-                <label for="categorie">Catégorie</label><select id="categorie" name="categorie"><option value="">Sélectionnez une catégorie</option></select></div>
-                <div class="form-group">
-                </div>`;
-
-    const footer = document.createElement('div');
-    footer.className = `footer-modal`;
-    footer.innerHTML = `<div class="lnBar"></div><button type="submit" class="btn-submit">Valider</button></form></div>`;
-
-    return { header, main, footer };
-}
-
-
-// gestionnaire d'evenement dans la modal 
-function displayModal(step) {
+// **Écouteur d'événement DOMContentLoaded:**
+document.addEventListener("DOMContentLoaded", () => {
+    // **Récupération des éléments du DOM:**
     const modalOverlay = document.getElementById('modalOverlay');
+    const openModalBtn = document.getElementById('open-modal-btn');
     const modalContent = document.getElementById('modalContent');
 
-    // Nettoyer le contenu actuel de la modale
-    modalContent.innerHTML = '';
+    // **Ouverture et fermeture de la modale:**
+    // Ouvrir la modale principale
+    openModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'block';
+        displayModal(1); // Affiche la première étape
+    });
 
-    // Créer les éléments de la modale en fonction de l'étape
-    
-    let  content, header, main, footer;
-    // Sélectionner le contenu en fonction de l'étape
-    switch(step) {
-        case 1:
-            content = createStep1Modal();
-            header = `<button class="close">X</button>`;
-            main = `<h2>Galerie photo</h2><div class="modalGallery"></div>`;
-            footer = `<div class="lnBar"></div><button id="btn-add-photo" class="btn-ajouter-photo">Ajouter une photo</button>`;
-            
-            break;
-        case 2:
-            content = createStep2Modal();
-            header = `<button class="goPrev">[<]</button><button class="close">X</button>`;
-            main = `
-            <h2>Ajout photo</h2>
-            <div class="form-content">
-                <form>
-                <div class="photo-upload image-preview">
-                <img class="img-prev" src="img-preview.png" alt="Aperçu de l'image">
-                <label for="addImgButton" class="add-img">+ Ajoutez photo</label>
-                <input type="file" id="addImgButton" accept="image/png, image/jpeg" style="display: none;">
-                <span class="format-img">jpg, .png 4mo max</span>
-            </div>
-                    <div class="form-group">
-                        <label for="titre">Titre</label>
-                        <input type="text" id="titre" name="titre"></div>
-                    <div class="form-group">
-                        <label for="categorie">Catégorie</label>
-                        <select id="categorie" name="categorie">
-                            <option value="">Sélectionnez une catégorie</option>
-                        </select>
-                    </div>
-                </form>`;
-            footer = `<div class="lnBar"></div>`;
-            setupImageTitleAutoFill(); // Appeler la fonction pour configurer le remplissage automatique du titre
-            chargerCategories(); 
-            break;
-        case 3:
-            content = createStep3Modal();
-            header = `<button class="goPrev">[<]</button><button class="close">X</button>`;
-            main = `<h2>Ajout photo</h2><div class="form-content"><form><div class="photo-upload image-preview"><img class="img-prev" src="img-preview.png" alt="prev"><button class="add-img">+ Ajouter photo</button><span class="format-img">jpg, .png 4mo max></span></div><div class="form-group"><label for="titre">Titre</label><input type="text" id="titre" name="titre"></div><div class="form-group"><label for="categorie">Catégorie</label><select id="categorie" name="categorie"><option value="">Sélectionnez une catégorie</option></select></div><div class="form-group"></div></form>`;
-            footer = `<div class="lnBar"></div><button type="submit" class="btn-submit">Valider</button>`;
-            break;
-        default:
-            console.error('Étape non reconnue');
-            return;
+    // Fermer la modale en cliquant sur l'overlay
+    modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+            closeModal();
+        }
+    });
+
+    // Fonction pour fermer la modale
+    function closeModal() {
+        modalOverlay.style.display = 'none';
+        modalContent.style.display = 'none';
+        modalContent.innerHTML = ''; // Nettoie le contenu précédent
     }
 
-    // Ajouter le nouveau contenu à la modale
-    modalContent.appendChild(content.header);
-    modalContent.appendChild(content.main);
-    modalContent.appendChild(content.footer);
+    // **Étapes de la modale:**
+    function createModalHeader(hasCloseButton = false) {
+        const header = document.createElement('div');
+        header.className = 'modal-header';
+    
+        // **Ajout du titre**
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'close-modal';
+        closeButton.textContent = 'X';
+        closeButton.addEventListener('click', closeModal);
+        header.appendChild(closeButton);
+        const title = document.createElement('h2');
+        title.textContent = 'Portfolio';
+        header.appendChild(title);
+    
+        return header;
+    }
+    
+    // Fonction pour créer la première étape de la modale (Galerie)
+    function createStep1Modal() {
+        const header = createModalHeader();
+        const main = document.createElement('div');
+        main.className = 'main-modal';
 
-    if (step !== 2) {
-        // Ajouter le nouveau contenu à la modale pour les autres étapes
+        // Créer la galerie sans utiliser innerHTML
+        const gallery = document.createElement('div');
+        gallery.className = 'modalGallery';
+
+        // Charger et afficher les éléments de la galerie
+        loadGallery(gallery);
+
+        main.appendChild(gallery);
+
+        const footer = document.createElement('div');
+        footer.className = 'footer-modal';
+
+        // **Ajout des boutons sans utiliser innerHTML:**
+        const btnAddPhoto = document.createElement('button');
+        btnAddPhoto.id = 'btn-add-photo';
+        btnAddPhoto.className = 'btn-ajouter-photo';
+        btnAddPhoto.textContent = 'Ajouter une photo';
+        btnAddPhoto.addEventListener('click', () => displayModal(2));
+
+        footer.appendChild(btnAddPhoto);
+
+        // **Mettre à jour l'innerHTML de modalContent**
+        modalContent.innerHTML = ''; // Nettoie le contenu précédent
+        modalContent.appendChild(header);
+        modalContent.appendChild(main);
+        modalContent.appendChild(footer);
+
+        return { header, main, footer };
+    }
+
+    // Fonction pour créer la deuxième étape de la modale (Ajout de photo)
+    function createStep2Modal() {
+        let imageSrc = null; // Initialisez imageSrc à null
+        const header = createModalHeader(true, true);
+        const form = document.createElement('form');
+        form.className = 'form-content';
+        form.setAttribute('enctype', 'multipart/form-data');
+
+        function createModalHeader(hasCloseButton, hasGoPrevButton) {
+            // Création du conteneur de l'en-tête
+            const header = document.createElement('div');
+            header.className = 'modal-header';
+            // Ajout du bouton "Précédent"
+            if (hasGoPrevButton) {
+                const goPrevButton = document.createElement('button');
+                goPrevButton.type = 'button';
+                goPrevButton.className = 'go-prev-modal';
+                goPrevButton.textContent = '‹ Précédent';
+                goPrevButton.addEventListener('click', () => displayModal(1));
+                header.appendChild(goPrevButton);
+            }
+            // Ajout du bouton de fermeture
+            if (hasCloseButton) {
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'close-modal';
+                closeButton.textContent = 'X';
+                closeButton.addEventListener('click', closeModal);
+                header.appendChild(closeButton);
+            }
+        
+            // Ajout du titre
+            const title = document.createElement('h2');
+            title.textContent = 'Ajouter une photo';
+            header.appendChild(title);
+        
+            return header;
+        }
+
+        // Créer le formulaire sans utiliser innerHTML
+        const photoUpload = document.createElement('div');
+        photoUpload.className = 'photo-upload image-preview';
+        const imgPreview = document.createElement('img');
+        imgPreview.className = 'img-prev';
+        imgPreview.src = 'img-preview.png';
+        imgPreview.alt = 'Aperçu de image';
+
+
+        const addImgLabel = document.createElement('label');
+        addImgLabel.setAttribute('for', 'addImgButton');
+        addImgLabel.className = 'add-img';
+        addImgLabel.textContent = '+ Ajoutez photo';
+
+        const addImgButton = document.createElement('input');
+        addImgButton.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imageSrc = event.target.result; // Assignez la base64 à imageSrc
+                imgPreview.src = imageSrc; // Prévisualisez l'image
+            };
+            reader.readAsDataURL(file);
+        });
+        addImgButton.type = 'file';
+        addImgButton.id = 'addImgButton';
+        addImgButton.name = 'image';
+        addImgButton.accept = 'image/png, image/jpeg';
+        addImgButton.style.display = 'none';
+
+        const formatImg = document.createElement('span');
+        formatImg.className = 'format-img';
+        formatImg.textContent = 'jpg, .png 4mo max';
+
+        photoUpload.appendChild(imgPreview);
+        photoUpload.appendChild(addImgLabel);
+        photoUpload.appendChild(addImgButton);
+        photoUpload.appendChild(formatImg);
+
+
+        const titreFormGroup = document.createElement('div');
+        titreFormGroup.className = 'form-group';
+
+        const titreLabel = document.createElement('label');
+        titreLabel.setAttribute('for', 'titreInput');
+        titreLabel.textContent = 'Titre';
+
+        const titreInput = document.createElement('input');
+        titreInput.type = 'text';
+        titreInput.id = 'titreInput';
+        titreInput.name = 'title';
+
+        titreFormGroup.appendChild(titreLabel);
+        titreFormGroup.appendChild(titreInput);
+
+        const categorieFormGroup = document.createElement('div');
+        categorieFormGroup.className = 'form-group';
+
+        const categorieLabel = document.createElement('label');
+        categorieLabel.setAttribute('for', 'categorie');
+        categorieLabel.textContent = 'Catégorie';
+
+        const categorieSelect = document.createElement('select');
+        categorieSelect.id = 'categorie';
+        categorieSelect.name = 'categoryId';
+
+        categorieFormGroup.appendChild(categorieLabel);
+        categorieFormGroup.appendChild(categorieSelect);
+
+        
+        form.appendChild(photoUpload);
+        form.appendChild(titreFormGroup);
+        form.appendChild(categorieFormGroup);
+
+        const footer = document.createElement('div');
+        footer.className = 'footer-modal';
+
+
+
+        const btnSubmit = document.createElement('button');
+        btnSubmit.type = 'button';
+        btnSubmit.className = 'btn-submit';
+        btnSubmit.textContent = 'Envoyer';
+        btnSubmit.addEventListener('click', () => {
+            const title = titreInput.value;
+            const categoryId = categorieSelect.value;
+            displayModal(3, imageSrc, title, categoryId); // Passez imageSrc
+        });
+        footer.appendChild(btnSubmit);
+
+        // **Mettre à jour l'innerHTML de modalContent**
+        modalContent.innerHTML = ''; // Nettoie le contenu précédent
+        modalContent.appendChild(header);
+        modalContent.appendChild(form);
+        modalContent.appendChild(footer);
+
+        // Chargement des catégories
+        chargerCategories(categorieSelect);
+
+        return { header, main: form, footer };
+    }
+
+    // Fonction pour créer la troisième étape de la modale (Confirmation et prévisualisation)
+    function createStep3Modal(imageSrc, title, categoryId) {
+        const header = createModalHeader(true, true);
+        const form = document.createElement('form');
+        form.className = 'form-content';
+        form.setAttribute('enctype', 'multipart/form-data');
+      
+        // Prévisualisation de l'image
+        const imgPreview = document.createElement('img');
+        imgPreview.className = 'img-prev';
+        imgPreview.src = imageSrc; // Utiliser imageSrc transmis à cette fonction
+        imgPreview.alt = 'Aperçu de l\'image';
+        form.appendChild(imgPreview);
+      
+        // Titre et catégorie (pour confirmation)
+        const titreLabel = document.createElement('label');
+        titreLabel.textContent = 'Titre:';
+        form.appendChild(titreLabel);
+      
+        const titreValue = document.createElement('span');
+        titreValue.textContent = title;
+        form.appendChild(titreValue);
+      
+        const categorieLabel = document.createElement('label');
+        categorieLabel.textContent = 'Catégorie:';
+        form.appendChild(categorieLabel);
+      
+        const categorieValue = document.createElement('span');
+        categorieValue.textContent = categoryId;
+        form.appendChild(categorieValue);
+      
+        const footer = document.createElement('div');
+        footer.className = 'footer-modal';
+      
+        const btnValider = document.createElement('button');
+        btnValider.type = 'submit'; // Change to submit button
+        btnValider.className = 'btn-valider';
+        btnValider.textContent = 'Confirmer';
+        footer.appendChild(btnValider);
+      
+        // Mettre à jour le contenu de la modal
+        modalContent.innerHTML = '';
+        modalContent.appendChild(header);
+        modalContent.appendChild(form);
+        modalContent.appendChild(footer);
+      
+        return { header, main: form, footer };
+      }
+
+    // **Fonction pour afficher la modale en fonction de l'étape:**
+    function displayModal(step, imageSrc = '', title = '', categoryId = '') {
+        let content;
+        switch (step) {
+            case 1:
+                content = createStep1Modal();
+                break;
+            case 2:
+                content = createStep2Modal(imageSrc, title, categoryId);
+                break;
+            case 3:
+                content = createStep3Modal(imageSrc, title, categoryId);
+                break;
+            default:
+            console.error('Étape non reconnue');
+            return;
+        }
+
+        // **Mettre à jour l'innerHTML de modalContent**
+        modalContent.innerHTML = ''; // Nettoie le contenu précédent
         modalContent.appendChild(content.header);
         modalContent.appendChild(content.main);
         modalContent.appendChild(content.footer);
+
+        modalOverlay.style.display = 'block';
+        modalContent.style.display = 'block';
     }
-    // Afficher la modale
-    modalOverlay.style.display = 'block';
-    modal.style.display = 'block';
+    // addeventListener submitFinal .btn-Valider
+    const form = document.querySelector('form'); 
+    form.addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevent default form submission
+    
+      const imageSrc = document.querySelector('input[name="image"]').files[0]; // Get the image file
+      const title = document.querySelector('input[name="title"]').value;
+      const categoryId = document.querySelector('select[name="category"]').value;
+    
+      submitFinal(imageSrc, title, categoryId); // Call submitFinal with correct data
+    });
+    function submitFinal(imageSrc, title, categoryId,) {
+        // Préparation des données
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('imageUrl', imageSrc);
+        formData.append('categoryId', categoryId);
+        formData.append('userId', 'ID_utilisateur');
+        formData.append('workId', workId);
+      
+        const token = localStorage.getItem('token');
+      
+        // Envoi des données
+        fetch('http://localhost:5678/api/works', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Erreur lors de l\'ajout du travail');
+          }
+        })
+        .then(data => {
+          console.log('Success:', data);
+          closeModal(); // Or display success message
+          // Update gallery (implement logic to add new work to gallery)
+          loadGallery(document.getElementById('Gallery')); 
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // ...
+        });
+      }
+      const btnValiderElements = document.querySelectorAll('.btn-valider');
 
-    // Attacher les gestionnaires d'événements spécifiques (par exemple, fermeture, retour, soumission de formulaire)
-    attachEventHandlers(step);
-
-}
-
-function setupImageTitleAutoFill() {
-    const inputImage = document.getElementById('addImgButton');
-    const inputTitre = document.getElementById('titre');
-
-    if (inputImage && inputTitre) {
-        inputImage.addEventListener('change', function(event) {
-            if (event.target.files.length > 0) {
-                const fileName = event.target.files[0].name;
-                // Extraire le nom du fichier sans l'extension pour l'utiliser comme titre
-                const title = fileName.replace(/\.[^/.]+$/, "");
-                inputTitre.value = title; // Mettre à jour le champ du titre avec le nom du fichier
+      btnValiderElements.forEach((btnValider) => {
+        btnValider.addEventListener('click', (event) => {
+          event.preventDefault(); // Prevent default form submission
+      
+          const form = event.currentTarget.closest('form'); // Get the parent form
+          const imageSrc = form.querySelector('input[name="image"]').files[0];
+          const title = form.querySelector('input[name="title"]').value;
+          const categoryId = form.querySelector('select[name="category"]').value;
+      
+          submitFinal(imageSrc, title, categoryId);
+        });
+      });
+    // **Fonction de chargement des catégories depuis le backend:**
+    function chargerCategories(selectElement) {
+        fetch('http://localhost:5678/api/categories')
+            .then(response => response.json())
+            .then(categories => {
+                selectElement.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+                categories.forEach(categorie => {
+                    const option = document.createElement('option');
+                    option.value = categorie.id;
+                    option.textContent = categorie.name;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erreur lors du chargement des catégories:', error));
+    }
+    // **Fonction de conversion d'image en base64 (exemple utilisant FileReader):**
+    function convertToBase64(imageSrc) {
+        return new Promise((resolve, reject) => {
+            if (typeof imageSrc === 'string' && imageSrc.startsWith('http')) {
+                fetch(imageSrc)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                    })
+                    .catch(reject);
+            } else {
+                // imageSrc est déjà un Blob ou une DataURL
+                resolve(imageSrc);
             }
         });
     }
-}
 
-function attachEventHandlers(step) {
-    // Fermeture de la modale
-    document.body.addEventListener('click', function(event) {
-        // Fermeture de la modale
-        if (event.target.matches('.close')) {
-            modalOverlay.style.display = 'none';
-            modal.style.display = 'none';
-        }
-    
-        // Retour à l'étape précédente
-        if (event.target.matches('.goPrev')) {
-            displayModal(step - 1); // Assurez-vous que 'step' est correctement géré
-        }
-    
-        // Passage à l'étape 2
-        if (event.target.matches('#btn-add-photo')) {
-            displayModal(2);
-        }
-    
-        // Suppression d'un travail
-        if (event.target.matches('.delete-icon')) {
-            const id = event.target.getAttribute('data-id'); // Récupère l'ID de l'élément à supprimer
-            if (id) {
-                supprimerTravail(id);
+
+
+    // **Fonction de chargement et d'affichage des éléments de la galerie:**
+    async function loadGallery(galleryElement) {
+        try {
+            const response = await fetch('http://localhost:5678/api/works');
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement de la galerie');
             }
-        }
-        // Gestion de la soumission du formulaire dans la Modal 2
-        if (step === 2) {
-            const form = document.querySelector('.form-content');
-            if (form) {
-                form.addEventListener('submit', function(event) {
-                    event.preventDefault(); // Empêche la soumission standard du formulaire
-                    event.stopPropagation(); // Empêche la propagation de l'événement
-        
-                    const formData = new FormData(form);
-                    const token = localStorage.getItem('token'); // Assurez-vous d'avoir le token
-        
-                    fetch('http://localhost:5678/api/works', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Success:', data);
-                        displayModal(3); // Passez à la Modal 3 pour confirmer l'ajout
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                });
-            }
-        }
-        
-
-        
-        // Ajoutez d'autres conditions si nécessaire
-        
-    });
     
-
-
-    // Ajouter d'autres gestionnaires d'événements spécifiques à chaque étape ici
-
-}
-function supprimerTravail(id) {
-    const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
-    fetch(`http://localhost:5678/api/works/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${token}` // Utiliser le token dynamiquement
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            const elementASupprimer = document.getElementById(`travail-${id}`);
-            if (elementASupprimer) elementASupprimer.remove();
-        } else {
-            console.error('Erreur lors de la suppression:', response.statusText);
-        }
-    })
-    .catch(error => console.error('Erreur:', error));
-}
-});
-document.addEventListener('DOMContentLoaded', function() {
-    document.body.addEventListener('submit', function(event) {
-        if (event.target.matches('.form-content')) {
-            event.preventDefault(); // Empêche la soumission standard du formulaire
-
-            const formData = new FormData(event.target);
-            const token = localStorage.getItem('token'); // Assurez-vous d'avoir le token
-
-            fetch('http://localhost:5678/api/works', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                displayModal(3); // Passez à la Modal 3 pour confirmer l'ajout
-            })
-            .catch((error) => {
-                console.error('Error:', error);
+            const works = await response.json();
+            galleryElement.innerHTML = ''; // Clear existing content
+    
+            works.forEach(work => {
+                const imgElement = document.createElement('img');
+                imgElement.src = work.imageUrl;
+    
+                // Create a deletion icon element using FontAwesome
+                const deleteIcon = document.createElement('i');
+                deleteIcon.setAttribute('data-id', work.id); // Add data-id attribute
+                deleteIcon.classList.add('fa-solid', 'fa-trash-can', 'delete-icon');
+    
+                // Add event listener for deletion
+                deleteIcon.addEventListener('click', () => supprimerTravail(work.id));
+    
+                const workElement = document.createElement('div');
+                workElement.appendChild(imgElement);
+                workElement.appendChild(deleteIcon);
+                galleryElement.appendChild(workElement);
             });
+        } catch (error) {
+            console.error('Erreur lors du chargement de la galerie:', error);
+            // Handle potential error scenarios (e.g., display an error message to the user)
         }
-    });
-});
-
-
-
-
-function chargerCategories() {
-    fetch('http://localhost:5678/api/categories')
-        .then(response => response.json())
-        .then(categories => {
-            const selectCategorie = document.getElementById('categorie');
-            selectCategorie.innerHTML = '<option value="">Sélectionnez une catégorie</option>'; // Réinitialise le contenu
-
-            categories.forEach(categorie => {
-                const option = document.createElement('option');
-                option.value = categorie.id; // Supposons que chaque catégorie a un 'id'
-                option.textContent = categorie.nom; // Supposons que chaque catégorie a un 'nom'
-                selectCategorie.appendChild(option);
-            });
-        })
-        .catch(error => console.error('Erreur lors du chargement des catégories:', error));
-}
-
-function attachEventHandlersForCurrentStep(step) {
-    if (step === 2) {
-        // Attache un gestionnaire d'événements pour 'goPrev' dans l'Étape 2
-        const goPrevButton = modalContent.querySelector('.goPrev');
-        if (goPrevButton) {
-            goPrevButton.addEventListener('click', () => {
-                displayModal(1); // Reviens à l'Étape 1
-            });
-        }
-
-        // Charge les catégories chaque fois que la Modal 2 est affichée
-        chargerCategories();
     }
-    // Ajoute d'autres gestionnaires d'événements pour d'autres étapes si nécessaire
-}
-
-document.body.addEventListener('submit', function(event) {
-    if (event.target.matches('.form-content')) {
-        event.preventDefault(); // Empêche la soumission standard du formulaire
-        event.stopPropagation(); // Empêche la propagation de l'événement
-
-        const formData = new FormData(event.target);
-        const token = localStorage.getItem('token'); // Assurez-vous d'avoir le token
-
-        fetch('http://localhost:5678/api/works', {
-            method: 'POST',
-            body: formData,
+    
+    // **Fonction de suppression d'un travail (implémentez la logique de suppression en fonction de votre backend):**
+    function supprimerTravail(id) {
+        const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
+        fetch(`http://localhost:5678/api/works/${id}`, {
+            method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`,
-            },
+                'Authorization': `Bearer ${token}` // Utiliser le token dynamiquement
+            }
         })
         .then(response => {
             if (response.ok) {
-                return response.json();
+                const elementASupprimer = document.getElementById(`travail-${id}`);
+                if (elementASupprimer) elementASupprimer.remove();
             } else {
-                throw new Error('Erreur lors de l\'ajout du travail');
+                console.error('Erreur lors de la suppression:', response.statusText);
             }
         })
-        .then(data => {
-            console.log('Success:', data);
-            // Ici, vous pouvez gérer la réussite, par exemple en affichant un message de succès ou en passant à la Modal 3
-            displayModal(3); // Passez à la Modal 3 pour confirmer l'ajout
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            // Ici, vous pouvez gérer l'erreur, par exemple en affichant un message d'erreur à l'utilisateur
-        });
+        .catch(error => console.error('Erreur:', error));
     }
-});
+    
 
+    // **Fonctions utilitaires (optionnelles):**
 
-// Appeler chargerCategories() après que la Modal 2 est affichée
+    // Fonction pour afficher un message d'erreur
+    function showError(message) {
+        const errorElement = document.getElementById('errorMessage');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
 
-modalContent.innerHTML = ''; // Nettoie le contenu précédent
+    // Fonction pour masquer le message d'erreur
+    function hideError() {
+        const errorElement = document.getElementById('errorMessage');
+        errorElement.style.display = 'none';
+    }
 
+    
+    // **Appel de la fonction d'ouverture de la modale:**
+    // openModalBtn.click(); // Décommenter pour ouvrir la modale automatiquement
 
+}); // Fin de l'écouteur d'événement DOMContentLoaded

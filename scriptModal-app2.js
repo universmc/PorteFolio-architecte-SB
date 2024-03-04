@@ -1,29 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialisation des éléments et des variables
     const modalOverlay = document.getElementById('modalOverlay');
     const openModalBtn = document.getElementById('open-modal-btn');
     const modalContent = document.getElementById('modalContent');
-    let imageSrc = null; // Source de l'image initialisée globalement
+    let imageSrc = null; // Image source initialized globally to be accessible across functions
 
-    // Affichage de la modale lors du clic sur le bouton
     openModalBtn.addEventListener('click', () => {
         modalOverlay.style.display = 'block';
-        displayModal(1); // Affiche la première étape de la modale
+        displayModal(1); // Show the first step of the modal
     });
 
-    // Fermeture de la modale lors du clic sur l'overlay
     modalOverlay.addEventListener('click', (event) => {
-        if (event.target === modalOverlay) closeModal();
+        if (event.target === modalOverlay) {
+            closeModal();
+        }
     });
 
-    // Fonction pour fermer la modale
     function closeModal() {
         modalOverlay.style.display = 'none';
         modalContent.style.display = 'none';
         modalContent.innerHTML = '';
     }
 
-    // Création de l'en-tête de la modale
     function createModalHeader() {
         const header = document.createElement('div');
         header.className = 'modal-header';
@@ -34,8 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
         header.appendChild(closeButton);
         return header;
     }
-
-    // Première étape de la modale : Galerie
     function createStep1Modal() {
         const header = createModalHeader();
         const title = document.createElement('h3');
@@ -59,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return { header, main, footer };
     }
 
-    // Deuxième étape de la modale : Formulaire d'ajout
+    // Function createStep2Modal corrected
     function createStep2Modal() {
         const header = document.createElement('div');
         header.className = 'modal-header';
@@ -145,49 +140,47 @@ document.addEventListener("DOMContentLoaded", () => {
         return { header, main: form, footer };
     }
 
-    // Fonction pour afficher la modale en fonction de l'étape
-// Fonction pour créer un groupe de formulaire
-function createFormGroup(id, labelText, type) {
-    const group = document.createElement('div');
-    group.className = 'form-group';
-
-    const label = document.createElement('label');
-    label.setAttribute('for', id);
-    label.textContent = labelText;
-
-    let input;
-    if (type === 'select') {
-        input = document.createElement('select');
-        input.innerHTML = '<option value="">Sélectionnez une catégorie</option>'; // Option par défaut
-    } else {
-        input = document.createElement('input');
-        input.type = type;
+    function chargerCategories(selectElement) {
+        fetch('http://localhost:5678/api/categories')
+            .then(response => response.json())
+            .then(categories => {
+                selectElement.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+                categories.forEach(categorie => {
+                    const option = document.createElement('option');
+                    option.value = categorie.id;
+                    option.textContent = categorie.name;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erreur lors du chargement des catégories:', error));
     }
-    input.id = id;
-    input.name = id;
 
-    group.appendChild(label);
-    group.appendChild(input);
-
-    return { group, input: input, select: input }; // Renvoie également input sous le nom de select pour une utilisation simplifiée
-}
+    // Corrections and additional functions here...
+    function createFormGroup(id, labelText, type) {
+        const group = document.createElement('div');
+        group.className = 'form-group';
     
-        // Fonction pour charger les catégories depuis l'API
-        function chargerCategories(selectElement) {
-            fetch('http://localhost:5678/api/categories')
-                .then(response => response.json())
-                .then(categories => {
-                    selectElement.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
-                    categories.forEach(categorie => {
-                        const option = document.createElement('option');
-                        option.value = categorie.id;
-                        option.textContent = categorie.name;
-                        selectElement.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Erreur lors du chargement des catégories:', error));
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = labelText;
+    
+        let input;
+        if (type === 'select') {
+            input = document.createElement('select');
+            input.innerHTML = '<option value="">Sélectionnez une catégorie</option>'; // Option par défaut
+        } else {
+            input = document.createElement('input');
+            input.type = type;
         }
-    // Fonction pour afficher la modale en fonction de l'étape
+        input.id = id;
+        input.name = id;
+    
+        group.appendChild(label);
+        group.appendChild(input);
+    
+        return { group, input: input, select: input }; // Renvoie également input sous le nom de select pour une utilisation simplifiée
+    }
+
     function displayModal(step) {
         let content;
         switch (step) {
@@ -209,37 +202,34 @@ function createFormGroup(id, labelText, type) {
         modalContent.style.display = 'block';
     }
 
-    // **Validation en temps réel et soumission du formulaire** (corrigé et amélioré)
-    const titreInput = document.getElementById('titreInput');
-    const categorieSelect = document.getElementById('categorie');
-    const submitButton = document.querySelector('.btn-submit');
-
     function validateForm() {
+        const titreInput = document.getElementById('titreInput');
+        const categorieSelect = document.getElementById('categorie');
+
         const isImageSelected = imageSrc !== null;
-        const isTitleFilled = titreInput.value.trim() !== '';
-        const isCategorySelected = categorieSelect.value !== '';
+        const isTitleFilled = titreInput && titreInput.value.trim() !== '';
+        const isCategorySelected = categorieSelect && categorieSelect.value !== '';
 
-        // Update submit button state based on validation
-        if (submitButton) {
-            submitButton.disabled = !(isImageSelected && isTitleFilled && isCategorySelected);
-            submitButton.style.backgroundColor = submitButton.disabled ? 'gray' : '#1D6154';
-            submitButton.style.cursor = submitButton.disabled ? 'not-allowed' : 'pointer';
+        const btnSubmit = document.querySelector('.btn-submit');
+        if (btnSubmit) {
+            btnSubmit.disabled = !(isImageSelected && isTitleFilled && isCategorySelected);
+            btnSubmit.style.backgroundColor = btnSubmit.disabled ? 'gray' : '#1D6154';
+            btnSubmit.style.cursor = btnSubmit.disabled ? 'not-allowed' : 'pointer';
         }
-
-        return isImageSelected && isTitleFilled && isCategorySelected; // Return true only if all conditions are met
     }
-
-    // Attach event listeners to form fields for real-time validation
-    titreInput.addEventListener('input', validateForm);
-    categorieSelect.addEventListener('change', validateForm);
-
-    submitButton.addEventListener('click', () => {
-        if (validateForm()) {
-            submitFinal(imageSrc, titreInput.value, categorieSelect.value);
+    function setupSubmitButton() {
+        const btnSubmit = document.querySelector('.btn-submit');
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', () => {
+                if (validateForm()) { // Si la validation est réussie
+                    submitFinal(imageSrc, titreInput.value, categorieSelect.value);
+                } else {
+                    // Gérer l'échec de la validation ici, par exemple en affichant des messages d'erreur
+                    console.error("Validation failed");
+                }
+            });
         }
-    });
-   
-
+    }
     function submitFinal(imageSrc, title, categoryId) {
         if (!imageSrc) {
             console.error("Image source not defined.");
@@ -290,76 +280,80 @@ function createFormGroup(id, labelText, type) {
             console.error('Error:', error);
             // Handle errors (e.g., display error message to user)
         });
-    }    
-  
-    // **Gestion du bouton "Submit"**
-    function setupSubmitButton() {
-    const btnSubmit = document.querySelector('.btn-submit');
-
-    btnSubmit.addEventListener('click', () => {
-        if (validateForm()) {
-            submitFinal(imageSrc, titreInput.value, categorieId);
-        }
-
-    });
     }
-
+    
+    // Fonction helper pour convertir une chaîne Base64 en Blob
+    function base64ToBlob(base64, contentType) {
+        const sliceSize = 512;
+        const byteCharacters = atob(base64.split(',')[1]);
+        const slicesCount = Math.ceil(byteCharacters.length / sliceSize);
+        const byteArrays = new Array(slicesCount);
+    
+        for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+            const begin = sliceIndex * sliceSize;
+            const end = Math.min(begin + sliceSize, byteCharacters.length);
+    
+            const bytes = new Array(end - begin);
+            for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
+                bytes[i] = byteCharacters[offset].charCodeAt(0);
+            }
+            byteArrays[sliceIndex] = new Uint8Array(bytes);
+        }
+        return new Blob(byteArrays, {type: contentType});
+    }
 
     // **Fonction de chargement et d'affichage des éléments de la galerie:**
     async function loadGallery(galleryElement) {
-        try {
-            const response = await fetch('http://localhost:5678/api/works/');
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement de la galerie');
+            try {
+                const response = await fetch('http://localhost:5678/api/works');
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement de la galerie');
+                }
+        
+                const works = await response.json();
+                galleryElement.innerHTML = ''; // Clear existing content
+        
+                works.forEach(work => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = work.imageUrl;
+        
+                    // Create a deletion icon element using FontAwesome
+                    const deleteIcon = document.createElement('i');
+                    deleteIcon.setAttribute('data-id', work.id); // Add data-id attribute
+                    deleteIcon.classList.add('fa-solid', 'fa-trash-can', 'delete-icon');
+        
+                    // Add event listener for deletion
+                    deleteIcon.addEventListener('click', () => supprimerTravail(work.id));
+        
+                    const workElement = document.createElement('div');
+                    workElement.appendChild(imgElement);
+                    workElement.appendChild(deleteIcon);
+                    galleryElement.appendChild(workElement);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement de la galerie:', error);
+                // Handle potential error scenarios (e.g., display an error message to the user)
             }
-    
-            const works = await response.json();
-            galleryElement.innerHTML = ''; // Clear existing content
-    
-            works.forEach(work => {
-                const imgElement = document.createElement('img');
-                imgElement.src = work.imageUrl;
-    
-                // Create a deletion icon element using FontAwesome
-                const deleteIcon = document.createElement('i');
-                deleteIcon.setAttribute('data-id', work.id); // Add data-id attribute
-                deleteIcon.classList.add('fa-solid', 'fa-trash-can', 'delete-icon');
-    
-                // Add event listener for deletion
-                deleteIcon.addEventListener('click', () => supprimerTravail(work.id));
-    
-                const workElement = document.createElement('div');
-                workElement.appendChild(imgElement);
-                workElement.appendChild(deleteIcon);
-                galleryElement.appendChild(workElement);
-            });
-        } catch (error) {
-            console.error('Erreur lors du chargement de la galerie:', error);
-            // Handle potential error scenarios (e.g., display an error message to the user)
-        }
     }
-
+    
     // **Fonction de suppression d'un travail (implémentez la logique de suppression en fonction de votre backend):**
     function supprimerTravail(id) {
-        const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
-        fetch(`http://localhost:5678/api/works/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}` // Utiliser le token dynamiquement
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                const elementASupprimer = document.getElementById(`travail-${id}`);
-                if (elementASupprimer) elementASupprimer.remove();
-            } else {
-                console.error('Erreur lors de la suppression:', response.statusText);
-            }
-        })
-        .catch(error => console.error('Erreur:', error));
+            const token = localStorage.getItem('token'); // Récupérer le token depuis le localStorage
+            fetch(`http://localhost:5678/api/works/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}` // Utiliser le token dynamiquement
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    const elementASupprimer = document.getElementById(`travail-${id}`);
+                    if (elementASupprimer) elementASupprimer.remove();
+                } else {
+                    console.error('Erreur lors de la suppression:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
     }
+
 });
-
-
-
-    
