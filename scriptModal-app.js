@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialisation des éléments et des variables
     const modalOverlay = document.getElementById('modalOverlay');
     const openModalBtn = document.getElementById('open-modal-btn');
     const modalContent = document.getElementById('modalContent');
     let imageSrc = null; // Source de l'image initialisée globalement
+    const titreInput = document.getElementById('titreInput');
+    let categorieId = null;
 
     // Affichage de la modale lors du clic sur le bouton
     openModalBtn.addEventListener('click', () => {
@@ -140,14 +141,31 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.appendChild(header);
         modalContent.appendChild(form);
         modalContent.appendChild(footer);
+
         chargerCategories(categorieFormGroup.select);
+        validateForm();
         setupSubmitButton();
+
+            // Fonction pour charger les catégories depuis l'API
+        function chargerCategories(selectElement) {
+        fetch('http://localhost:5678/api/categories')
+            .then(response => response.json())
+            .then(categories => {
+                selectElement.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+                categories.forEach(categorie => {
+                    const option = document.createElement('option');
+                    option.value = categorie.id;
+                    option.textContent = categorie.name;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erreur lors du chargement des catégories:', error));
+}
+
         return { header, main: form, footer };
     }
-
-    // Fonction pour afficher la modale en fonction de l'étape
-// Fonction pour créer un groupe de formulaire
-function createFormGroup(id, labelText, type) {
+    // Fonction pour créer un groupe de formulaire
+    function createFormGroup(id, labelText, type) {
     const group = document.createElement('div');
     group.className = 'form-group';
 
@@ -170,23 +188,9 @@ function createFormGroup(id, labelText, type) {
     group.appendChild(input);
 
     return { group, input: input, select: input }; // Renvoie également input sous le nom de select pour une utilisation simplifiée
-}
+    }
     
-        // Fonction pour charger les catégories depuis l'API
-        function chargerCategories(selectElement) {
-            fetch('http://localhost:5678/api/categories')
-                .then(response => response.json())
-                .then(categories => {
-                    selectElement.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
-                    categories.forEach(categorie => {
-                        const option = document.createElement('option');
-                        option.value = categorie.id;
-                        option.textContent = categorie.name;
-                        selectElement.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Erreur lors du chargement des catégories:', error));
-        }
+
     // Fonction pour afficher la modale en fonction de l'étape
     function displayModal(step) {
         let content;
@@ -210,99 +214,85 @@ function createFormGroup(id, labelText, type) {
     }
 
     // **Validation en temps réel et soumission du formulaire** (corrigé et amélioré)
-    const titreInput = document.getElementById('titreInput');
-    const categorieSelect = document.getElementById('categorie');
-    const submitButton = document.querySelector('.btn-submit');
-
     function validateForm() {
+        
+        const titreInput = document.getElementById('titreInput');
+        const categorieSelect = document.getElementById('categorie');
+        const imageSrc = document.getElementById('addImgButton').files.length > 0 ? URL.createObjectURL(document.getElementById('addImgButton').files[0]) : null; // Assurez-vous que cet ID correspond à votre input d'image
+        const btnSubmit = document.querySelector('.btn-submit');
+    
         const isImageSelected = imageSrc !== null;
-        const isTitleFilled = titreInput.value.trim() !== '';
-        const isCategorySelected = categorieSelect.value !== '';
-
-        // Update submit button state based on validation
-        if (submitButton) {
-            submitButton.disabled = !(isImageSelected && isTitleFilled && isCategorySelected);
-            submitButton.style.backgroundColor = submitButton.disabled ? 'gray' : '#1D6154';
-            submitButton.style.cursor = submitButton.disabled ? 'not-allowed' : 'pointer';
-        }
-
-        return isImageSelected && isTitleFilled && isCategorySelected; // Return true only if all conditions are met
+        const isTitleFilled = titreInput && titreInput.value.trim() !== '';
+        const isCategorySelected = categorieSelect && categorieSelect.value !== '';
+    
+        btnSubmit.disabled = !(isImageSelected && isTitleFilled && isCategorySelected);
+        btnSubmit.style.backgroundColor = btnSubmit.disabled ? 'gray' : '#1D6154'; // Vert si actif
+        btnSubmit.style.cursor = btnSubmit.disabled ? 'not-allowed' : 'pointer';
+    }
+    
+    // Attacher la validation en temps réel aux champs du formulaire
+    document.getElementById('titreInput').addEventListener('input', validateForm);
+    validateForm(); 
+    document.getElementById('categorie').addEventListener('change', validateForm);
+    validateForm(); 
+    // Pour l'upload d'image, assurez-vous de déclencher validateForm après la mise à jour de imageSrc
+    document.getElementById('addImgButton').addEventListener('change', function(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imageSrc = e.target.result; // Assurez-vous que imageSrc est accessible ici
+            validateForm(); // Valide après la mise à jour de l'image
+        };
+        reader.readAsDataURL(event.target.files[0]);
+        return { group, input, select: type === 'select' ? input : null };
+    });
+// Soumission du formulaire
+function submitFinal() {
+    submitFinal(imageSrc, titreInput.value, categorieFormGroup.select.value);
+    // Vérifier si tous les champs sont remplis
+    if (!imageSrc || !document.getElementById('titreInput').value || !document.getElementById('categorie').value) {
+        console.error("Données du formulaire incomplètes.");
+        return;
     }
 
-    // Attach event listeners to form fields for real-time validation
-    titreInput.addEventListener('input', validateForm);
-    categorieSelect.addEventListener('change', validateForm);
+    // Préparer l'objet FormData
+    const formData = new FormData();
+    const imageBlob = imageSrc.startsWith('data:image') ? base64ToBlob(imageSrc) : imageSrc;
+    formData.append('image', imageBlob);
+    formData.append('title', document.getElementById('titreInput').value);
+    formData.append('categoryId', document.getElementById('categorie').value);
 
-    submitButton.addEventListener('click', () => {
-        if (validateForm()) {
-            submitFinal(imageSrc, titreInput.value, categorieSelect.value);
-        }
-    });
-   
+    // Envoyer les données
+    const token = localStorage.getItem('token');
+    fetch('http://localhost:5678/api/works', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('La soumission a échoué.');
+        return response.json();
+    })
+    .then(data => {
+        console.log('Succès:', data);
+        closeModal(); // Fermer la modale
+        // Rafraîchir la galerie ici si nécessaire
+    })
+    .catch(error => console.error('Erreur:', error));
+}
 
-    function submitFinal(imageSrc, title, categoryId) {
-        if (!imageSrc) {
-            console.error("Image source not defined.");
-            return;
-        }
-    
-        const formData = new FormData();
-    
-        // Convert base64 image string to Blob if imageSrc is a base64 string
-        if (typeof imageSrc === 'string' && imageSrc.startsWith('data:image')) {
-            const byteString = atob(imageSrc.split(',')[1]);
-            const mimeString = imageSrc.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            const blob = new Blob([ab], {type: mimeString});
-            formData.append('image', blob);
-        } else {
-            // Assume imageSrc is already a File object and append it directly
-            formData.append('image', imageSrc);
-        }
-    
-        formData.append('title', title);
-        formData.append('categoryId', categoryId);
-    
-        const token = localStorage.getItem('token');
-    
-        fetch('http://localhost:5678/api/works', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Submission failed.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Success:', data);
-            // Handle successful submission (e.g., close modal, display success message, reload gallery)
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Handle errors (e.g., display error message to user)
-        });
-    }    
+// Convertir Base64 en Blob pour l'envoi de l'image
+function base64ToBlob(base64) {
+    const byteString = atob(base64.split(',')[1]);
+    const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+}
   
-    // **Gestion du bouton "Submit"**
-    function setupSubmitButton() {
-    const btnSubmit = document.querySelector('.btn-submit');
 
-    btnSubmit.addEventListener('click', () => {
-        if (validateForm()) {
-            submitFinal(imageSrc, titreInput.value, categorieId);
-        }
-
-    });
-    }
 
 
     // **Fonction de chargement et d'affichage des éléments de la galerie:**
@@ -358,6 +348,17 @@ function createFormGroup(id, labelText, type) {
         })
         .catch(error => console.error('Erreur:', error));
     }
+    // **Gestion du bouton "Submit"**
+    function setupSubmitButton() {
+        const btnSubmit = document.querySelector('.btn-submit');
+    
+        btnSubmit.addEventListener('click', () => {
+            if (validateForm()) {
+                submitFinal(imageSrc, titreInput.value, categorieId);
+            }
+    
+        });
+        }
 });
 
 
